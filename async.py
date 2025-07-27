@@ -2,14 +2,15 @@ import asyncio
 from playwright.async_api import async_playwright
 
 async def scrape_nikkei(page):
-    await page.goto("https://business.nikkei.com/ranking/?i_cid=nbpnb_ranking", timeout=60000)
+    await page.goto("https://business.nikkei.com/ranking/?i_cid=nbpnb_ranking", timeout=60000, wait_until="domcontentloaded")
     results = []
-    articles = await page.locator('section.p-articleList_item').all()
 
+    article_list = page.locator('section.p-articleList_item')
+    count = await article_list.count()
         # 最大10件までループ
-    for article in articles[:10]:
-
+    for i in range(min(count, 10)):
         try:
+            article = article_list.nth(i)
             title = await article.locator('h3.p-articleList_item_title').inner_text()
             href = await article.locator('a.p-articleList_item_link').get_attribute('href')
             if href and not href.startswith("http"):
@@ -21,12 +22,15 @@ async def scrape_nikkei(page):
     return results
 
 async def scrape_yahoo(page):
-    await page.goto("https://news.yahoo.co.jp/categories/business", timeout=60000)
+    await page.goto("https://news.yahoo.co.jp/categories/business", timeout=60000, wait_until="domcontentloaded")
     results = []
-    articles = await page.locator('a.sc-1nhdoj2-1').all()
 
-    for article in articles:
+    article_list = page.locator('a.sc-1nhdoj2-1')
+    count = await article_list.count()
+
+    for i in range(min(count, 10)):
         try:
+            article = article_list.nth(i)
             title = await article.inner_text()
             url = await article.get_attribute('href')
             if url and title:
@@ -37,14 +41,16 @@ async def scrape_yahoo(page):
     return results
 
 async def scrape_toyokeizai(page):
-    await page.goto("https://toyokeizai.net/list/genre/market", timeout=60000)
+    await page.goto("https://toyokeizai.net/list/genre/market", timeout=60000, wait_until="domcontentloaded")
     results = []
 
     # 記事のlocatorをすべて取得
-    articles = await page.locator('li.wd217').all()
+    article_list = page.locator('li.wd217')
+    count = await article_list.count()
     # 最大10件までループ
-    for article in articles[:10]:
+    for i in range(min(count, 10)):
         try:
+            article = article_list.nth(i)
             title = await article.locator('span.title').inner_text()
             href = await article.locator('span.title > a').get_attribute('href')
             if href and not href.startswith("http"):
