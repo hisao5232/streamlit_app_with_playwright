@@ -1,0 +1,11 @@
+# 環境変数
+.env
+
+# 仮想環境フォルダ
+stock_app/
+
+# テストファイル
+sync.py
+
+# pyenv
+.python-version
