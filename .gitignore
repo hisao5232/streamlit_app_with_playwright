@@ -9,3 +9,6 @@ sync.py
 
 # pyenv
 .python-version
+
+# 成果物
+news.db
