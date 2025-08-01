@@ -64,7 +64,7 @@ async def scrape_toyokeizai(page):
 
 async def main():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         nikkei_page = await browser.new_page()
         yahoo_page = await browser.new_page()
         toyokeizai_page = await browser.new_page()
