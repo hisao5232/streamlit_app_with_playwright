@@ -3,11 +3,9 @@
 import streamlit as st
 import requests
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
-API_TOKEN = os.getenv("API_TOKEN")
+API_TOKEN = st.secrets["API_TOKEN"]
 
 st.title("📰 最新ニュース一覧")
 
