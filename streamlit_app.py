@@ -3,7 +3,7 @@
 import streamlit as st
 import requests
 
-API_URL = "http://127.0.0.1:8000/news"  # ← VPSにデプロイ後はIPに置き換える
+API_URL = "http://http://210.131.217.15/:8000/news"  # ← VPSにデプロイ後はIPに置き換える
 
 st.title("📰 最新ニュース一覧")
 
