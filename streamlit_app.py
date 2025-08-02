@@ -2,8 +2,12 @@
 
 import streamlit as st
 import requests
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
+API_TOKEN = os.getenv("API_TOKEN")
 
 st.title("📰 最新ニュース一覧")
 
@@ -15,9 +19,12 @@ params = {
     "source": source,
     "limit": limit
 }
+headers = {
+    "Authorization": f"Bearer {API_TOKEN}"
+}
 
 try:
-    response = requests.get(API_URL, params=params)
+    response = requests.get(API_URL, params=params, headers=headers)
     response.raise_for_status()
     news_items = response.json()
 
