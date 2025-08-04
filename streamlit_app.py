@@ -15,8 +15,8 @@ st.title("📈 TOPIXとドル円の3カ月推移")
 end_date = datetime.today()
 start_date = end_date - timedelta(days=90)
 
-# TOPIXのティッカー（Yahoo Financeでは ^TOPX）
-topix = yf.download("^TOPX", start=start_date, end=end_date)
+# TOPIXのティッカー
+topix = yf.download("1306.T", start=start_date, end=end_date)
 usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
 
 # データが取得できているか確認
@@ -83,3 +83,4 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
