@@ -3,6 +3,54 @@
 import streamlit as st
 import requests
 import os
+import yfinance as yf
+import pandas as pd
+import plotly.graph_objs as go
+from datetime import datetime, timedelta
+
+# タイトル
+st.title("📈 TOPIXとドル円の3カ月推移")
+
+# 日付範囲設定
+end_date = datetime.today()
+start_date = end_date - timedelta(days=90)
+
+# TOPIXのティッカー（Yahoo Financeでは ^TOPX）
+topix = yf.download("^TOPX", start=start_date, end=end_date)
+usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
+
+# データが取得できているか確認
+if topix.empty or usd_jpy.empty:
+    st.error("データ取得に失敗しました。時間をおいて再試行してください。")
+else:
+    # グラフ描画
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=topix.index,
+        y=topix["Close"],
+        name="TOPIX",
+        line=dict(color='blue')
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=usd_jpy.index,
+        y=usd_jpy["Close"],
+        name="ドル円 (USD/JPY)",
+        yaxis="y2",
+        line=dict(color='orange')
+    ))
+
+    # レイアウトの調整（2軸表示）
+    fig.update_layout(
+        title="TOPIXとドル円為替の推移（過去3カ月）",
+        xaxis_title="日付",
+        yaxis=dict(title="TOPIX", side="left"),
+        yaxis2=dict(title="USD/JPY", overlaying="y", side="right"),
+        legend=dict(x=0, y=1.1, orientation="h")
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
 API_TOKEN = st.secrets["API_TOKEN"]
