@@ -9,13 +9,13 @@ import plotly.graph_objs as go
 from datetime import datetime, timedelta
 
 # タイトル
-st.title("📈 TOPIXとドル円の3カ月推移")
+st.title("📈 TOPIXとドル円の3カ月推移（個別表示）")
 
 # 日付範囲設定
 end_date = datetime.today()
 start_date = end_date - timedelta(days=90)
 
-# TOPIXのティッカー
+# データ取得
 topix = yf.download("1306.T", start=start_date, end=end_date)
 usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
 
@@ -23,34 +23,39 @@ usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
 if topix.empty or usd_jpy.empty:
     st.error("データ取得に失敗しました。時間をおいて再試行してください。")
 else:
-    # グラフ描画
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
+    # TOPIXグラフ
+    fig_topix = go.Figure()
+    fig_topix.add_trace(go.Scatter(
         x=topix.index,
         y=topix["Close"],
         name="TOPIX",
         line=dict(color='blue')
     ))
-
-    fig.add_trace(go.Scatter(
-        x=usd_jpy.index,
-        y=usd_jpy["Close"],
-        name="ドル円 (USD/JPY)",
-        yaxis="y2",
-        line=dict(color='orange')
-    ))
-
-    # レイアウトの調整（2軸表示）
-    fig.update_layout(
-        title="TOPIXとドル円為替の推移（過去3カ月）",
+    fig_topix.update_layout(
+        title="TOPIXの推移（過去3カ月）",
         xaxis_title="日付",
-        yaxis=dict(title="TOPIX", side="left"),
-        yaxis2=dict(title="USD/JPY", overlaying="y", side="right"),
-        legend=dict(x=0, y=1.1, orientation="h")
+        yaxis_title="TOPIX価格",
+        margin=dict(l=40, r=40, t=60, b=40)
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    # ドル円グラフ
+    fig_usd_jpy = go.Figure()
+    fig_usd_jpy.add_trace(go.Scatter(
+        x=usd_jpy.index,
+        y=usd_jpy["Close"],
+        name="USD/JPY",
+        line=dict(color='orange')
+    ))
+    fig_usd_jpy.update_layout(
+        title="ドル円（USD/JPY）の推移（過去3カ月）",
+        xaxis_title="日付",
+        yaxis_title="為替レート",
+        margin=dict(l=40, r=40, t=60, b=40)
+    )
+
+    # グラフ表示
+    st.plotly_chart(fig_topix, use_container_width=True)
+    st.plotly_chart(fig_usd_jpy, use_container_width=True)
 
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
 API_TOKEN = st.secrets["API_TOKEN"]
@@ -83,4 +88,5 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
 
