@@ -35,6 +35,9 @@ else:
         title="TOPIXの推移（過去3カ月）",
         xaxis_title="日付",
         yaxis_title="TOPIX価格",
+        xaxis=dict(
+            tickformat="%Y-%m-%d"  # 日付だけ表示
+        ),
         margin=dict(l=40, r=40, t=60, b=40)
     )
 
@@ -50,6 +53,9 @@ else:
         title="ドル円（USD/JPY）の推移（過去3カ月）",
         xaxis_title="日付",
         yaxis_title="為替レート",
+        xaxis=dict(
+            tickformat="%Y-%m-%d"
+        ),
         margin=dict(l=40, r=40, t=60, b=40)
     )
 
@@ -88,5 +94,6 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
 
 
