@@ -7,65 +7,33 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objs as go
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
 
-# タイトル
-st.title("📈 TOPIXとドル円の3カ月推移（個別表示）")
-
-# 日付範囲設定
+# 日付範囲の設定
 end_date = datetime.today()
 start_date = end_date - timedelta(days=90)
 
-# データ取得
-topix = yf.download("1306.T", start=start_date, end=end_date)
+# TOPIX ETF（1475.T）
+topix = yf.download("1475.T", start=start_date, end=end_date)
+
+# ドル円レート（JPY=X）
 usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
 
-# TOPIXとドル円のインデックスを日付だけに変換
-topix.index = topix.index.date
-usd_jpy.index = usd_jpy.index.date
+# グラフ1：TOPIX ETF
+fig1, ax1 = plt.subplots()
+ax1.plot(topix.index, topix["Close"], label="TOPIX ETF (1475.T)", color="blue")
+ax1.set_title("TOPIX ETF")
+ax1.set_ylabel("価格（円）")
+ax1.legend()
+st.pyplot(fig1)
 
-# データが取得できているか確認
-if topix.empty or usd_jpy.empty:
-    st.error("データ取得に失敗しました。時間をおいて再試行してください。")
-else:
-    # TOPIXグラフ
-    fig_topix = go.Figure()
-    fig_topix.add_trace(go.Scatter(
-        x=topix.index,
-        y=topix["Close"],
-        name="TOPIX",
-        line=dict(color='blue')
-    ))
-    fig_topix.update_layout(
-        title="TOPIXの推移（過去3カ月）",
-        xaxis_title="日付",
-        yaxis_title="TOPIX価格",
-        xaxis=dict(
-            tickformat="%Y-%m-%d"  # 日付だけ表示
-        ),
-        margin=dict(l=40, r=40, t=60, b=40)
-    )
-
-    # ドル円グラフ
-    fig_usd_jpy = go.Figure()
-    fig_usd_jpy.add_trace(go.Scatter(
-        x=usd_jpy.index,
-        y=usd_jpy["Close"],
-        name="USD/JPY",
-        line=dict(color='orange')
-    ))
-    fig_usd_jpy.update_layout(
-        title="ドル円（USD/JPY）の推移（過去3カ月）",
-        xaxis_title="日付",
-        yaxis_title="為替レート",
-        xaxis=dict(
-            tickformat="%Y-%m-%d"
-        ),
-        margin=dict(l=40, r=40, t=60, b=40)
-    )
-
-    # グラフ表示
-    st.plotly_chart(fig_topix, use_container_width=True)
-    st.plotly_chart(fig_usd_jpy, use_container_width=True)
+# グラフ2：ドル円レート
+fig2, ax2 = plt.subplots()
+ax2.plot(usd_jpy.index, usd_jpy["Close"], label="USD/JPY", color="green")
+ax2.set_title("ドル円レート")
+ax2.set_ylabel("為替レート")
+ax2.legend()
+st.pyplot(fig2)
 
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
 API_TOKEN = st.secrets["API_TOKEN"]
@@ -98,6 +66,7 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
 
 
 
