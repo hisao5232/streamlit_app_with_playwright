@@ -19,6 +19,10 @@ start_date = end_date - timedelta(days=90)
 topix = yf.download("1306.T", start=start_date, end=end_date)
 usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
 
+# TOPIXとドル円のインデックスを日付だけに変換
+topix.index = topix.index.date
+usd_jpy.index = usd_jpy.index.date
+
 # データが取得できているか確認
 if topix.empty or usd_jpy.empty:
     st.error("データ取得に失敗しました。時間をおいて再試行してください。")
@@ -94,6 +98,7 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
 
 
 
