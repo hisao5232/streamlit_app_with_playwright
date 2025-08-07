@@ -65,7 +65,6 @@ if not usd_jpy_data.empty and "Close" in usd_jpy_data.columns:
 else:
     st.warning("ドル円レートのデータがありません。")
     
-=======
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
@@ -129,7 +128,6 @@ ax2.set_ylabel("為替レート")
 ax2.legend()
 st.pyplot(fig2)
 
->>>>>>> f84f1ac94b6c1adde922aaaa10dd3d5665275360
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
 API_TOKEN = st.secrets["API_TOKEN"]
 
@@ -161,10 +159,3 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
-
-
-
-
-
-
-
