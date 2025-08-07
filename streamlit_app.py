@@ -5,7 +5,6 @@ import requests
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objs as go
-<<<<<<< HEAD
 
 st.title("日経平均とドル円レートのチャート")
 
@@ -162,6 +161,7 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
 
 
 
