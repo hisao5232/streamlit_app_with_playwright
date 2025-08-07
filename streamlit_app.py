@@ -20,6 +20,40 @@ topix = yf.download("1475.T", start=start_date, end=end_date)
 usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
 
 # グラフ1：TOPIX ETF
+fig1 = go.Figure()
+fig1.add_trace(go.Scatter(x=topix.index, y=topix["Close"],
+                          mode='lines',
+                          name="TOPIX ETF (1475.T)",
+                          line=dict(color='blue')))
+fig1.update_layout(title="TOPIX ETF",
+                   xaxis_title="日付",
+                   yaxis_title="価格（円）")
+
+st.plotly_chart(fig1, use_container_width=True)
+
+# グラフ2：ドル円レート
+fig2 = go.Figure()
+fig2.add_trace(go.Scatter(x=usd_jpy.index, y=usd_jpy["Close"],
+                          mode='lines',
+                          name="USD/JPY",
+                          line=dict(color='green')))
+fig2.update_layout(title="ドル円レート",
+                   xaxis_title="日付",
+                   yaxis_title="為替レート")
+
+st.plotly_chart(fig2, use_container_width=True)
+
+# 日付範囲の設定
+end_date = datetime.today()
+start_date = end_date - timedelta(days=90)
+
+# TOPIX ETF（1475.T）
+topix = yf.download("1475.T", start=start_date, end=end_date)
+
+# ドル円レート（JPY=X）
+usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
+
+# グラフ1：TOPIX ETF
 fig1, ax1 = plt.subplots()
 ax1.plot(topix.index, topix["Close"], label="TOPIX ETF (1475.T)", color="blue")
 ax1.set_title("TOPIX ETF")
@@ -66,6 +100,7 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
 
 
 
