@@ -2,71 +2,69 @@
 
 import streamlit as st
 import requests
-import os
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objs as go
-from datetime import datetime, timedelta
 
-# タイトル
-st.title("📈 TOPIXとドル円の3カ月推移（個別表示）")
+st.title("日経平均とドル円レートのチャート")
 
-# 日付範囲設定
-end_date = datetime.today()
-start_date = end_date - timedelta(days=90)
+# --- 日経平均チャート ---
+nikkei_ticker = "^N225"
+period = st.selectbox("期間を選択", ["5d", "1mo", "3mo", "6mo", "1y", "2y"], index=1)
 
-# データ取得
-topix = yf.download("1306.T", start=start_date, end=end_date)
-usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
+nikkei_data = yf.download(nikkei_ticker, period=period, interval="1d")
+if isinstance(nikkei_data.columns, pd.MultiIndex):
+    nikkei_data.columns = nikkei_data.columns.get_level_values(0)
 
-# TOPIXとドル円のインデックスを日付だけに変換
-topix.index = topix.index.date
-usd_jpy.index = usd_jpy.index.date
-
-# データが取得できているか確認
-if topix.empty or usd_jpy.empty:
-    st.error("データ取得に失敗しました。時間をおいて再試行してください。")
+st.subheader(f"{nikkei_ticker} のローソク足チャート")
+if not nikkei_data.empty and all(col in nikkei_data.columns for col in ["Open", "High", "Low", "Close"]):
+    fig_nikkei = go.Figure(
+        data=[
+            go.Candlestick(
+                x=nikkei_data.index,
+                open=nikkei_data["Open"],
+                high=nikkei_data["High"],
+                low=nikkei_data["Low"],
+                close=nikkei_data["Close"],
+                name="日経平均"
+            )
+        ]
+    )
+    fig_nikkei.update_layout(
+        xaxis_title="日付",
+        yaxis_title="価格",
+        xaxis_rangeslider_visible=False
+    )
+    st.plotly_chart(fig_nikkei)
 else:
-    # TOPIXグラフ
-    fig_topix = go.Figure()
-    fig_topix.add_trace(go.Scatter(
-        x=topix.index,
-        y=topix["Close"],
-        name="TOPIX",
-        line=dict(color='blue')
-    ))
-    fig_topix.update_layout(
-        title="TOPIXの推移（過去3カ月）",
-        xaxis_title="日付",
-        yaxis_title="TOPIX価格",
-        xaxis=dict(
-            tickformat="%Y-%m-%d"  # 日付だけ表示
-        ),
-        margin=dict(l=40, r=40, t=60, b=40)
+    st.warning("日経平均のデータがありません。")
+
+# --- ドル円レートの折れ線グラフ ---
+usd_jpy_ticker = "JPY=X"
+usd_jpy_data = yf.download(usd_jpy_ticker, period=period, interval="1d")
+if isinstance(usd_jpy_data.columns, pd.MultiIndex):
+    usd_jpy_data.columns = usd_jpy_data.columns.get_level_values(0)
+
+st.subheader(f"{usd_jpy_ticker} の終値折れ線グラフ")
+if not usd_jpy_data.empty and "Close" in usd_jpy_data.columns:
+    fig_fx = go.Figure(
+        data=[
+            go.Scatter(
+                x=usd_jpy_data.index,
+                y=usd_jpy_data["Close"],
+                mode="lines+markers",
+                name="USD/JPY"
+            )
+        ]
     )
-
-    # ドル円グラフ
-    fig_usd_jpy = go.Figure()
-    fig_usd_jpy.add_trace(go.Scatter(
-        x=usd_jpy.index,
-        y=usd_jpy["Close"],
-        name="USD/JPY",
-        line=dict(color='orange')
-    ))
-    fig_usd_jpy.update_layout(
-        title="ドル円（USD/JPY）の推移（過去3カ月）",
+    fig_fx.update_layout(
         xaxis_title="日付",
-        yaxis_title="為替レート",
-        xaxis=dict(
-            tickformat="%Y-%m-%d"
-        ),
-        margin=dict(l=40, r=40, t=60, b=40)
+        yaxis_title="為替レート"
     )
-
-    # グラフ表示
-    st.plotly_chart(fig_topix, use_container_width=True)
-    st.plotly_chart(fig_usd_jpy, use_container_width=True)
-
+    st.plotly_chart(fig_fx)
+else:
+    st.warning("ドル円レートのデータがありません。")
+    
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
 API_TOKEN = st.secrets["API_TOKEN"]
 
