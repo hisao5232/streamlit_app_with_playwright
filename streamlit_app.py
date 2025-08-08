@@ -33,7 +33,7 @@ if not nikkei_data.empty and all(col in nikkei_data.columns for col in ["Open", 
     fig_nikkei.update_layout(
         xaxis_title="日付",
         yaxis_title="価格",
-        xaxis_rangeslider_visible=False
+        xaxis_rangeslider_visible=False,
         yaxis=dict(tickformat=",.0f")  # 3桁カンマ区切りで整数表示
     )
     st.plotly_chart(fig_nikkei)
@@ -97,4 +97,5 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
 
