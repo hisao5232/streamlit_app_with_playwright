@@ -34,6 +34,7 @@ if not nikkei_data.empty and all(col in nikkei_data.columns for col in ["Open", 
         xaxis_title="日付",
         yaxis_title="価格",
         xaxis_rangeslider_visible=False
+        yaxis=dict(tickformat=",.0f")  # 3桁カンマ区切りで整数表示
     )
     st.plotly_chart(fig_nikkei)
 else:
@@ -64,69 +65,6 @@ if not usd_jpy_data.empty and "Close" in usd_jpy_data.columns:
     st.plotly_chart(fig_fx)
 else:
     st.warning("ドル円レートのデータがありません。")
-    
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-
-# 日付範囲の設定
-end_date = datetime.today()
-start_date = end_date - timedelta(days=90)
-
-# TOPIX ETF（1475.T）
-topix = yf.download("1475.T", start=start_date, end=end_date)
-
-# ドル円レート（JPY=X）
-usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
-
-# グラフ1：TOPIX ETF
-fig1 = go.Figure()
-fig1.add_trace(go.Scatter(x=topix.index, y=topix["Close"],
-                          mode='lines',
-                          name="TOPIX ETF (1475.T)",
-                          line=dict(color='blue')))
-fig1.update_layout(title="TOPIX ETF",
-                   xaxis_title="日付",
-                   yaxis_title="価格（円）")
-
-st.plotly_chart(fig1, use_container_width=True)
-
-# グラフ2：ドル円レート
-fig2 = go.Figure()
-fig2.add_trace(go.Scatter(x=usd_jpy.index, y=usd_jpy["Close"],
-                          mode='lines',
-                          name="USD/JPY",
-                          line=dict(color='green')))
-fig2.update_layout(title="ドル円レート",
-                   xaxis_title="日付",
-                   yaxis_title="為替レート")
-
-st.plotly_chart(fig2, use_container_width=True)
-
-# 日付範囲の設定
-end_date = datetime.today()
-start_date = end_date - timedelta(days=90)
-
-# TOPIX ETF（1475.T）
-topix = yf.download("1475.T", start=start_date, end=end_date)
-
-# ドル円レート（JPY=X）
-usd_jpy = yf.download("JPY=X", start=start_date, end=end_date)
-
-# グラフ1：TOPIX ETF
-fig1, ax1 = plt.subplots()
-ax1.plot(topix.index, topix["Close"], label="TOPIX ETF (1475.T)", color="blue")
-ax1.set_title("TOPIX ETF")
-ax1.set_ylabel("価格（円）")
-ax1.legend()
-st.pyplot(fig1)
-
-# グラフ2：ドル円レート
-fig2, ax2 = plt.subplots()
-ax2.plot(usd_jpy.index, usd_jpy["Close"], label="USD/JPY", color="green")
-ax2.set_title("ドル円レート")
-ax2.set_ylabel("為替レート")
-ax2.legend()
-st.pyplot(fig2)
 
 API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
 API_TOKEN = st.secrets["API_TOKEN"]
@@ -159,3 +97,4 @@ try:
             st.divider()
 except requests.exceptions.RequestException as e:
     st.error(f"APIリクエストに失敗しました: {e}")
+
