@@ -1,11 +1,31 @@
-# 環境変数
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+
+# Environment variables
 .env
 
-# 仮想環境フォルダ
-stock_app/
+# VSCode / IDE
+.vscode/
+.idea/
 
-# テストファイル
-sync.py
+# Build files
+build/
+dist/
+*.egg-info/
 
-# pyenv
-.python-version
+# Playwright / Scraping
+playwright/.cache/
+screenshots/
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# OS-specific
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+pydantic
+databases[postgresql]
+asyncpg
+psycopg2-binary

@@ -1,35 +1,43 @@
 import asyncio
-import aiosqlite
+import os
+import requests
 from playwright.async_api import async_playwright
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-DB_PATH = "news.db"
+# === 環境変数 ===
+API_URL = os.getenv("API_URL", "http://api_server:8000/news")
+API_TOKEN = os.getenv("API_TOKEN")
 
-# ニュース記事をDBに保存する関数
-async def save_to_db(source, articles):
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS news (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                source TEXT,
-                title TEXT,
-                url TEXT,
-                scraped_at TEXT
-            )
-        ''')
-        await db.commit()
+# === APIへニュースを送信する関数 ===
+def save_to_api(source, articles):
+    """
+    ニュースデータを FastAPI 経由で PostgreSQL に登録する。
+    """
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
-        now = datetime.now(ZoneInfo("Asia/Tokyo")).isoformat()
+    # 日本時間 → UTC → naive（タイムゾーン削除）
+    now = datetime.now(ZoneInfo("Asia/Tokyo")).astimezone(ZoneInfo("UTC")).replace(tzinfo=None)
+    # JSON化できるようにISO8601文字列に変換
+    now_str = now.isoformat()
 
-        for title, url in articles:
-            await db.execute('''
-                INSERT INTO news (source, title, url, scraped_at)
-                VALUES (?, ?, ?, ?)
-            ''', (source, title, url, now))
-        await db.commit()
+    for title, url in articles:
+        payload = {
+            "source": source,
+            "title": title,
+            "url": url,
+            "scraped_at": now_str,
+        }
+        try:
+            response = requests.post(API_URL, json=payload, headers=headers)
+            if response.status_code == 200:
+                print(f"✅ 登録成功: {title}")
+            else:
+                print(f"❌ 登録失敗 ({response.status_code}): {title}")
+        except Exception as e:
+            print(f"⚠️ 通信エラー: {e}")
 
-# スクレイピング関数（3サイト）
+# === 各ニュースサイトのスクレイピング関数 ===
 async def scrape_nikkei(page):
     await page.goto("https://business.nikkei.com/ranking/?i_cid=nbpnb_ranking", timeout=60000, wait_until="domcontentloaded")
     results = []
@@ -80,28 +88,32 @@ async def scrape_toyokeizai(page):
             continue
     return results
 
-# メイン処理
+# === メイン処理 ===
 async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
+
         nikkei_page = await browser.new_page()
         yahoo_page = await browser.new_page()
         toyokeizai_page = await browser.new_page()
 
+        # 並列スクレイピング
         nikkei_task = scrape_nikkei(nikkei_page)
         yahoo_task = scrape_yahoo(yahoo_page)
         toyokeizai_task = scrape_toyokeizai(toyokeizai_page)
 
-        nikkei_news, yahoo_news, toyokeizai_news = await asyncio.gather(nikkei_task, yahoo_task, toyokeizai_task)
+        nikkei_news, yahoo_news, toyokeizai_news = await asyncio.gather(
+            nikkei_task, yahoo_task, toyokeizai_task
+        )
 
         await browser.close()
 
-        # DBに保存
-        await save_to_db("nikkei", nikkei_news)
-        await save_to_db("yahoo", yahoo_news)
-        await save_to_db("toyokeizai", toyokeizai_news)
+        # === API経由で保存 ===
+        save_to_api("nikkei", nikkei_news)
+        save_to_api("yahoo", yahoo_news)
+        save_to_api("toyokeizai", toyokeizai_news)
 
-        # 表示（確認用）
+        # === 確認用出力 ===
         print("\n📰 日経新聞 経済ニュース")
         for i, (title, url) in enumerate(nikkei_news, 1):
             print(f"{i}. {title}\n   {url}")
@@ -115,4 +127,5 @@ async def main():
             print(f"{i}. {title}\n   {url}")
 
 # 実行
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

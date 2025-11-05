@@ -1,5 +1,4 @@
-# streamlit_app.py
-
+import os
 import streamlit as st
 import requests
 import yfinance as yf
@@ -66,7 +65,9 @@ if not usd_jpy_data.empty and "Close" in usd_jpy_data.columns:
 else:
     st.warning("ドル円レートのデータがありません。")
 
-API_URL = "http://210.131.217.15:8000/news"  # ← VPSにデプロイ後はIPに置き換える
+# ローカルブラウザからアクセスする場合
+API_URL = "http://api_server:8000/news"
+
 API_TOKEN = st.secrets["API_TOKEN"]
 
 st.title("📰 最新ニュース一覧")

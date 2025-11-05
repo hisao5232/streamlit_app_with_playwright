@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: newsdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d newsdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  streamlit:
+    build:
+      context: ./streamlit
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api_server
+    env_file:
+      - .env
+
+  api_server:
+    build:
+      context: ./api_server
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+  scraper:
+    build:
+      context: ./scraper
+    env_file:
+      - .env  # ← これを追加して共通設定を読み込む
+    environment:
+      API_URL: http://api_server:8000/news   # ← FastAPI側のサービス名で指定
+      DATABASE_URL: postgres://user:password@db:5432/newsdb
+    depends_on:
+      - db
+      - api_server  # ← 依存関係にAPIサーバーを追加
+
+volumes:
+  db_data:
