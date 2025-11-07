@@ -13,7 +13,7 @@ load_dotenv()
 
 # .envから環境変数取得
 API_TOKEN = os.getenv("API_TOKEN")
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@db:5432/newsdb")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:your_secure_password@news-db:5432/newsdb")
 
 # Docker環境によっては "postgres://" に変換されることがあるので補正
 if DATABASE_URL.startswith("postgres://"):
@@ -53,7 +53,12 @@ app = FastAPI()
 
 # 認証トークン検証
 def verify_token(authorization: Optional[str] = Header(None)):
-    if authorization != f"Bearer {API_TOKEN}":
+    if authorization is None:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    
+    # "Bearer " を取り除き、前後空白を削除して比較
+    token = authorization.replace("Bearer ", "").strip()
+    if token != API_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 # CORS許可

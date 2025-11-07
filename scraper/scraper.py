@@ -6,7 +6,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # === 環境変数 ===
-API_URL = os.getenv("API_URL", "http://api_server:8000/news")
+API_URL = os.getenv("API_URL")
 API_TOKEN = os.getenv("API_TOKEN")
 
 # === APIへニュースを送信する関数 ===

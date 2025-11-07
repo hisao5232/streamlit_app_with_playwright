@@ -65,10 +65,13 @@ if not usd_jpy_data.empty and "Close" in usd_jpy_data.columns:
 else:
     st.warning("ドル円レートのデータがありません。")
 
-# ローカルブラウザからアクセスする場合
-API_URL = "http://api_server:8000/news"
+# Dockerコンテナ内なら service 名を利用
+API_URL = os.getenv("API_URL")
+API_TOKEN = os.getenv("API_TOKEN")
 
-API_TOKEN = st.secrets["API_TOKEN"]
+# ローカルブラウザからアクセスする場合
+# API_URL = "http://api_server:8000/news"
+# API_TOKEN = st.secrets["API_TOKEN"]
 
 st.title("📰 最新ニュース一覧")
 
